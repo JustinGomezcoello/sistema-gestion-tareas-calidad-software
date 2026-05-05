@@ -337,3 +337,168 @@ test('búsqueda parcial LIKE: no sensible a mayúsculas/minúsculas', () => {
   assert.equal(results.length, 1);
   assert.equal(results[0].id, 'TK001');
 });
+
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════════════
+// PRUEBAS DE SPRINT 2: NUEVAS VALIDACIONES DEL PRODUCT OWNER
+// ═══════════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════════════
+test('rechazar fecha de vencimiento en el pasado', () => {
+  const manager = new TaskManager();
+
+  assert.throws(() => {
+    manager.createTask({
+      id: 'TK050',
+      title: 'Tarea con fecha pasada',
+      description: 'Esta fecha ya ocurrió',
+      priority: 'ALTA',
+      dueDate: '2020-01-01'
+    });
+  }, /La fecha de vencimiento solo puede ser una fecha futura/);
+});
+
+test('rechazar prioridad en minúsculas (debe ser estricto en MAYÚSCULAS)', () => {
+  const manager = new TaskManager();
+
+  assert.throws(() => {
+    manager.createTask({
+      id: 'TK051',
+      title: 'Tarea minúsculas',
+      description: 'Probando prioridad',
+      priority: 'alta', // en minúscula
+      dueDate: '2026-12-31'
+    });
+  }, /La prioridad debe ser ingresada en mayúsculas/);
+});
+
+test('rechazar título que exceda los 100 caracteres', () => {
+  const manager = new TaskManager();
+  const tituloLargo = 'A'.repeat(101); // Crea un string de 101 caracteres
+
+  assert.throws(() => {
+    manager.createTask({
+      id: 'TK052',
+      title: tituloLargo,
+      description: 'Descripción normal',
+      priority: 'MEDIA',
+      dueDate: '2026-12-31'
+    });
+  }, /El tamaño del título no puede exceder los 100 caracteres/);
+});
+
+test('rechazar descripción que exceda los 250 caracteres', () => {
+  const manager = new TaskManager();
+  const descLarga = 'B'.repeat(251); // Crea un string de 251 caracteres
+
+  assert.throws(() => {
+    manager.createTask({
+      id: 'TK053',
+      title: 'Título normal',
+      description: descLarga,
+      priority: 'BAJA',
+      dueDate: '2026-12-31'
+    });
+  }, /El tamaño de la descripción no puede exceder los 250 caracteres/);
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// PRUEBAS DE SPRINT 2: ACTUALIZAR ESTADO DE TAREA
+// ═══════════════════════════════════════════════════════════════════════════
+
+test('actualizar estado de una tarea correctamente', () => {
+  const manager = new TaskManager();
+  manager.createTask({
+    id: 'SP201',
+    title: 'Tarea de estado',
+    description: 'Prueba cambiar estado',
+    priority: 'ALTA',
+    dueDate: '2026-12-31'
+  });
+
+  const updatedTask = manager.actualizarEstadoTarea('SP201', 'en progreso');
+  assert.equal(updatedTask.status, 'en progreso');
+
+  const finalTask = manager.actualizarEstadoTarea('SP201', 'completada');
+  assert.equal(finalTask.status, 'completada');
+});
+
+test('rechazar actualización a un estado inválido', () => {
+  const manager = new TaskManager();
+  manager.createTask({
+    id: 'SP202',
+    title: 'Tarea inválida',
+    description: 'Prueba cambiar estado error',
+    priority: 'MEDIA',
+    dueDate: '2026-12-31'
+  });
+
+  assert.throws(() => {
+    manager.actualizarEstadoTarea('SP202', 'en pausa'); // Estado no permitido
+  }, /El estado debe ser: pendiente, en progreso o completada/);
+});
+
+test('rechazar actualización de estado de una tarea que no existe', () => {
+  const manager = new TaskManager();
+  assert.throws(() => {
+    manager.actualizarEstadoTarea('ZZ999', 'en progreso');
+  }, /No se encontró ninguna tarea con el ID/);
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// PRUEBAS DE SPRINT 2: LISTAR POR PRIORIDAD
+// ═══════════════════════════════════════════════════════════════════════════
+
+test('listar tareas agrupadas correctamente por prioridad', () => {
+  const manager = new TaskManager();
+  
+  // 2 ALTA, 1 MEDIA, 0 BAJA
+  manager.createTask({ id: 'PR001', title: 'T1', description: 'D', priority: 'ALTA', dueDate: '2026-12-31' });
+  manager.createTask({ id: 'PR002', title: 'T2', description: 'D', priority: 'ALTA', dueDate: '2026-12-31' });
+  manager.createTask({ id: 'PR003', title: 'T3', description: 'D', priority: 'MEDIA', dueDate: '2026-12-31' });
+
+  const agrupadas = manager.listarTareasPorPrioridad();
+
+  assert.equal(agrupadas['ALTA'].length, 2);
+  assert.equal(agrupadas['MEDIA'].length, 1);
+  assert.equal(agrupadas['BAJA'].length, 0);
+  assert.equal(agrupadas['ALTA'][0].id, 'PR001');
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// PRUEBAS DE SPRINT 2: PRÓXIMAS A VENCER
+// ═══════════════════════════════════════════════════════════════════════════
+
+test('listar tareas próximas a vencer (excluyendo completadas y fuera de rango)', () => {
+  const manager = new TaskManager();
+  
+  // Utilidades para calcular fechas dinámicas para la prueba
+  const today = new Date();
+  const formatYMD = (date) => date.toISOString().split('T')[0];
+
+  const tomorrow = new Date(today); tomorrow.setDate(today.getDate() + 1);
+  const in5Days = new Date(today); in5Days.setDate(today.getDate() + 5);
+  const in10Days = new Date(today); in10Days.setDate(today.getDate() + 10);
+
+  // 1. Tarea que vence mañana (DEBE APARECER)
+  manager.createTask({ id: 'VN001', title: 'Mañana', description: 'D', priority: 'ALTA', dueDate: formatYMD(tomorrow) });
+  
+  // 2. Tarea que vence en 5 días (DEBE APARECER)
+  manager.createTask({ id: 'VN002', title: 'En 5 días', description: 'D', priority: 'MEDIA', dueDate: formatYMD(in5Days) });
+  
+  // 3. Tarea que vence en 10 días (NO DEBE APARECER, por defecto el límite es 7 días)
+  manager.createTask({ id: 'VN003', title: 'En 10 días', description: 'D', priority: 'BAJA', dueDate: formatYMD(in10Days) });
+  
+  // 4. Tarea que vence mañana pero está COMPLETADA (NO DEBE APARECER)
+  manager.createTask({ id: 'VN004', title: 'Mañana lista', description: 'D', priority: 'ALTA', dueDate: formatYMD(tomorrow) });
+  manager.actualizarEstadoTarea('VN004', 'completada');
+
+  const proximas = manager.listarTareasProximasAVencer(7);
+
+  // Solo VN001 y VN002 deberían estar en la lista
+  assert.equal(proximas.length, 2, 'Debe retornar exactamente 2 tareas');
+  assert.equal(proximas[0].id, 'VN001', 'Debe estar ordenada con la más próxima primero');
+  assert.equal(proximas[1].id, 'VN002');
+});
