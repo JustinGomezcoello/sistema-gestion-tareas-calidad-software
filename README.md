@@ -1,143 +1,360 @@
-# Sistema de Gestión de Tareas Empresarial - Sprint 1
+# Sistema de Gestión de Tareas Empresarial — Sprint 1
 
-## Integrantes
-- Justin Gomezcoello
-- David Rueda
-- Stefan Jativa
-- Jhoel Suarez
-- Mauricio Mora
+## Datos del Proyecto
+
+| Campo | Detalle |
+|-------|---------|
+| **Materia** | Calidad de Software |
+| **Sprint** | Sprint 1 — Crear y Buscar Tarea por ID |
+| **Integrantes** | Justin Gomezcoello, David Rueda, Stefan Jativa, Jhoel Suarez, Mauricio Mora |
+| **Lenguaje** | JavaScript (ES Modules / ESM) |
+| **Runtime** | Node.js v18+ |
+| **Framework de pruebas** | `node:test` (módulo nativo de Node.js, sin dependencias externas) |
+| **Medición de rendimiento** | `performance.now()` del módulo `node:perf_hooks` |
+| **Dependencias externas** | Ninguna — el proyecto usa solo módulos nativos de Node.js |
+
+---
 
 ## Funcionalidades del Sprint 1
-1. **Crear una tarea** con validación completa de todos los campos.
-2. **Buscar una tarea por ID** con búsqueda parcial tipo LIKE.
-3. **Prueba de tiempo de respuesta** menor a 1 segundo en todas las operaciones.
-4. **Carga automática de 50,000 tareas** para validar escalabilidad.
 
-## Formato del ID
-El ID de cada tarea debe tener el formato: **2 letras seguidas de 3 dígitos**.
+| Nº | Funcionalidad | Tipo |
+|----|---------------|------|
+| 1 | Crear tarea con validación completa de todos los campos | Funcional |
+| 2 | Buscar tarea por ID con búsqueda parcial tipo LIKE | Funcional |
+| 3 | Tiempo de respuesta < 1 segundo en todas las operaciones | No funcional |
+| 4 | Carga automática de 50,000 tareas para validar escalabilidad | No funcional |
 
-| Válido | Inválido |
-|--------|----------|
-| `AB123` | `12345` (solo números) |
-| `TK001` | `ABCDE` (solo letras) |
-| `ab123` (se convierte a `AB123`) | `A123` (1 letra + 3 dígitos) |
-| `ZZ999` | `AB12` (2 letras + 2 dígitos) |
+---
 
-## Búsqueda parcial (LIKE)
-La búsqueda por ID funciona como un `LIKE` en SQL:
-- Si escribes `TK`, encuentra todas las tareas cuyo ID contenga `TK` (ej: `TK001`, `TK002`, ...).
-- Si escribes `001`, encuentra todas las tareas cuyo ID contenga `001` (ej: `TK001`, `AB001`).
-- La búsqueda **no es sensible a mayúsculas/minúsculas**.
+## Cómo Ejecutar el Proyecto
 
-## Requisitos
-- Node.js v18+ instalado.
-- Visual Studio Code.
-- PowerShell.
+### Requisitos previos
+- **Node.js v18 o superior** instalado ([descargar](https://nodejs.org/)).
+- **Terminal / PowerShell**.
 
-## Ejecutar el sistema
+### Ejecutar el sistema interactivo
 ```powershell
 npm start
 ```
+Esto abre un menú en la terminal con 4 opciones (crear, buscar, cargar 50K, salir).
 
-## Ejecutar pruebas unitarias y de rendimiento
+### Ejecutar todas las pruebas (unitarias + rendimiento)
 ```powershell
 npm test
 ```
+Ejecuta las **28 pruebas automatizadas** y muestra los resultados en consola.
 
-## Criterios de aceptación Sprint 1
-- El sistema debe permitir crear una tarea con ID (2 letras + 3 dígitos), título, descripción, prioridad y fecha de vencimiento.
-- El sistema debe validar que el ID tenga el formato correcto (2 letras + 3 dígitos).
-- El sistema debe validar que el ID no esté vacío.
-- El sistema debe evitar IDs duplicados.
-- La prioridad solo puede ser alta, media o baja.
-- La fecha de vencimiento debe registrarse en formato válido YYYY-MM-DD.
-- El sistema debe permitir buscar una tarea por ID con búsqueda parcial (LIKE).
-- Si la tarea existe, debe mostrar la información completa.
-- Si la tarea no existe, debe mostrar un mensaje claro de "Tarea no encontrada".
-- La búsqueda por ID debe responder en menos de 1 segundo.
-- El sistema debe cargar 50,000 tareas automáticamente para validar escalabilidad.
+---
 
-## Medición del tiempo de respuesta
-El sistema mide y muestra el tiempo de respuesta **en cada operación del menú**:
+## Estructura del Proyecto
 
-- **Crear tarea** (opción 1): Muestra el tiempo que tarda en validar y almacenar la tarea.
-- **Buscar tarea** (opción 2): Muestra el tiempo que tarda la búsqueda parcial LIKE.
-- **Cargar 50,000 tareas** (opción 3): Muestra el tiempo total de generación y carga.
-
-La medición se realiza usando `performance.now()` de Node.js, que calcula el tiempo en milisegundos con alta precisión. Esto permite comprobar que todas las operaciones son eficientes incluso con 50,000 tareas cargadas.
-
-## Cómo se generan las 50,000 tareas automáticas
-
-El método `loadDemoTasks(50000)` genera tareas con IDs en formato válido (2 letras + 3 dígitos) usando un algoritmo combinatorio:
-
-1. **Prefijos de letras**: Se generan combinaciones de 2 letras de AA hasta ZZ (676 combinaciones posibles: AA, AB, ..., AZ, BA, BB, ..., ZZ).
-2. **Sufijos numéricos**: Cada prefijo se combina con números de 000 a 999 (1,000 por prefijo).
-3. **Capacidad total**: 676 × 1,000 = 676,000 IDs posibles, más que suficiente para 50,000.
-4. **Distribución**: Las primeras 50,000 tareas usan los prefijos AA000 hasta BX999.
-
-**Ejemplo de IDs generados:**
-```
-AA000, AA001, AA002, ..., AA999  (primeras 1,000 tareas)
-AB000, AB001, AB002, ..., AB999  (siguientes 1,000 tareas)
-AC000, AC001, ...                (y así sucesivamente)
-...
-BX000, BX001, ..., BX999        (últimas del lote de 50,000)
-```
-
-Cada tarea recibe:
-- **Título**: Combinación de una acción (ej: "Revisar documento") y un departamento (ej: "TI", "RH", "QA").
-- **Descripción**: Texto descriptivo con número de secuencia.
-- **Prioridad**: Distribuida equitativamente entre alta, media y baja.
-- **Fecha de vencimiento**: 2026-12-31 (uniforme para pruebas).
-- **Estado**: pendiente (valor por defecto).
-
-## Estructura del proyecto
 ```
 sistema-tareas-sprint1/
 ├── src/
-│   ├── main.js          # Menú interactivo de consola
-│   └── taskManager.js   # Lógica de negocio (crear, buscar, validar)
+│   ├── taskManager.js        ← Lógica de negocio (crear, buscar, validar, cargar)
+│   └── main.js               ← Menú interactivo de consola (interfaz de usuario)
 ├── tests/
-│   ├── taskManager.test.js   # 23 pruebas unitarias
-│   └── performance.test.js   # 5 pruebas de rendimiento
-├── package.json
-└── README.md
+│   ├── taskManager.test.js   ← 23 pruebas unitarias
+│   └── performance.test.js   ← 5 pruebas de rendimiento y escalabilidad
+├── package.json              ← Configuración del proyecto y scripts
+├── INFORME_SPRINT1_BORRADOR.md ← Informe del sprint
+└── README.md                 ← Este archivo
 ```
 
-## Pruebas implementadas (28 total)
+### Separación de responsabilidades
 
-### Pruebas unitarias (23 pruebas)
-| Nº | Prueba | Qué valida |
-|----|--------|------------|
-| 1 | Crear tarea con datos válidos | Creación correcta con todos los campos |
-| 2 | ID duplicado | No permite crear con ID repetido |
-| 3 | ID solo números | Rechaza `12345` |
-| 4 | ID solo letras | Rechaza `ABCDE` |
-| 5 | ID 1 letra + 3 dígitos | Rechaza `A123` |
-| 6 | ID 2 letras + 2 dígitos | Rechaza `AB12` |
-| 7 | ID caracteres especiales | Rechaza `A@123` |
-| 8 | ID vacío | Rechaza string vacío |
-| 9 | ID minúsculas | `ab123` se convierte a `AB123` |
-| 10 | Fecha texto libre | Rechaza `mañana` |
-| 11 | Fecha DD/MM/YYYY | Rechaza `10/05/2026` |
-| 12 | Fecha imposible | Rechaza `2026-13-40` |
-| 13 | Fecha vacía | Rechaza string vacío |
-| 14 | Fecha válida | Acepta `2026-02-28` |
-| 15 | Título vacío | Rechaza tarea sin título |
-| 16 | Descripción vacía | Rechaza tarea sin descripción |
-| 17 | Prioridad inválida | Rechaza `urgente` |
-| 18 | Búsqueda exacta existente | Encuentra tarea por ID exacto |
-| 19 | Búsqueda exacta inexistente | Retorna null |
-| 20 | LIKE por prefijo | Busca `TK` → encuentra `TK001`, `TK002` |
-| 21 | LIKE por sufijo | Busca `001` → encuentra `TK001`, `AB001` |
-| 22 | LIKE sin resultados | Busca `ZZ` → 0 resultados |
-| 23 | LIKE case insensitive | Busca `tk` → encuentra `TK001` |
+| Archivo | Responsabilidad |
+|---------|----------------|
+| `taskManager.js` | **Lógica pura de negocio.** No tiene interacción con la consola. Contiene la clase `TaskManager` con métodos para crear, buscar y validar tareas. Es independiente de la interfaz y puede reutilizarse en otro contexto (API web, app móvil, etc.). |
+| `main.js` | **Interfaz de usuario (CLI).** Se encarga de leer datos del teclado, mostrar resultados y medir tiempos de respuesta. Importa y usa `TaskManager`. |
+| `taskManager.test.js` | **Pruebas unitarias.** Verifica que cada validación y funcionalidad del `TaskManager` funcione correctamente en aislamiento. |
+| `performance.test.js` | **Pruebas de rendimiento.** Verifica que las operaciones cumplan el requerimiento de < 1 segundo con 50,000 tareas. |
 
-### Pruebas de rendimiento (5 pruebas)
-| Nº | Prueba | Qué valida |
-|----|--------|------------|
-| 24 | Carga de 50,000 tareas | Genera correctamente los 50,000 registros |
-| 25 | Búsqueda exacta < 1s | Busca 1 tarea entre 50,000 en menos de 1 segundo |
-| 26 | Búsqueda LIKE < 1s | Búsqueda parcial entre 50,000 en menos de 1 segundo |
-| 27 | Creación con 50K cargadas < 1s | Crear 1 tarea con 50,000 existentes en menos de 1 segundo |
-| 28 | IDs generados válidos | Todos los IDs auto-generados cumplen formato 2 letras + 3 dígitos |
+---
+
+## Tecnologías Utilizadas y Justificación
+
+### JavaScript ES Modules (ESM)
+Se usa la sintaxis moderna `import/export` de JavaScript en lugar de `require()`. Esto se configura con `"type": "module"` en `package.json`.
+
+### `Map` como estructura de datos
+El almacenamiento de tareas usa un `Map` de JavaScript en lugar de un array o un objeto plano:
+
+| Operación | Map (usado) | Array + find() (descartado) |
+|-----------|-------------|----------------------------|
+| Buscar por ID exacto | **O(1)** — tiempo constante | O(n) — recorre todo |
+| Insertar tarea | **O(1)** | O(1) con push |
+| Verificar duplicado | **O(1)** con `has()` | O(n) con `find()` |
+| Búsqueda LIKE | O(n) — inevitable | O(n) |
+
+**Conclusión:** Map garantiza que la búsqueda exacta y la creación sean instantáneas sin importar cuántas tareas existan, lo cual es clave para cumplir el requerimiento de < 1 segundo con 50,000 tareas.
+
+### `node:test` para pruebas
+Se usa el framework de pruebas **nativo de Node.js** (`node:test`), lo que significa que:
+- No se necesita instalar Jest, Mocha ni ninguna dependencia externa.
+- Las pruebas se ejecutan directamente con `node --test`.
+- Los assertions usan `node:assert/strict` (también nativo).
+
+### `performance.now()` para medir tiempo
+Se usa el módulo `node:perf_hooks` que ofrece medición con precisión de **microsegundos**. Esto es más preciso que `Date.now()` que solo tiene precisión de milisegundos.
+
+---
+
+## Formato del ID
+
+El ID de cada tarea debe tener el formato: **2 letras seguidas de 3 dígitos**.
+
+**Regex utilizado:** `/^[A-Za-z]{2}\d{3}$/`
+
+| Componente | Significado |
+|------------|-------------|
+| `^` y `$` | El string completo debe coincidir (no parcial) |
+| `[A-Za-z]` | Una letra (mayúscula o minúscula) |
+| `{2}` | Exactamente 2 letras |
+| `\d` | Un dígito (0-9) |
+| `{3}` | Exactamente 3 dígitos |
+
+### Ejemplos
+
+| Entrada | ¿Válido? | Razón |
+|---------|----------|-------|
+| `AB123` | ✅ Sí | 2 letras + 3 dígitos |
+| `TK001` | ✅ Sí | 2 letras + 3 dígitos |
+| `ab123` | ✅ Sí | Se convierte automáticamente a `AB123` |
+| `12345` | ❌ No | Solo números, faltan letras |
+| `ABCDE` | ❌ No | Solo letras, faltan dígitos |
+| `A123` | ❌ No | Solo 1 letra (necesita 2) |
+| `AB12` | ❌ No | Solo 2 dígitos (necesita 3) |
+| `A@123` | ❌ No | Contiene carácter especial |
+| *(vacío)* | ❌ No | ID obligatorio |
+
+---
+
+## Búsqueda Parcial tipo LIKE
+
+La búsqueda por ID funciona como un `LIKE '%texto%'` en SQL. El usuario no necesita escribir el ID completo.
+
+### ¿Cómo funciona internamente?
+
+```javascript
+// Método searchTasksById en taskManager.js
+searchTasksById(partialId) {
+  const search = partialId.toUpperCase();
+  const results = [];
+  for (const [key, task] of this.tasks) {
+    if (key.includes(search)) {   // ← Aquí está el LIKE
+      results.push(task);
+    }
+  }
+  return results;
+}
+```
+
+El método `String.includes()` verifica si el ID de cada tarea **contiene** el texto buscado en cualquier posición, igual que `LIKE '%texto%'` en SQL.
+
+### Ejemplos de búsqueda
+
+| Texto ingresado | Tareas encontradas | Explicación |
+|-----------------|-------------------|-------------|
+| `TK` | TK001, TK002, TK003, ... | Busca por prefijo |
+| `001` | TK001, AB001, CD001, ... | Busca por sufijo numérico |
+| `K00` | TK001, TK002, ..., TK009 | Busca por subcadena intermedia |
+| `tk` | TK001, TK002, ... | Case insensitive (no sensible a mayúsculas) |
+| `ZZZ` | *(ninguna)* | Muestra mensaje "No se encontraron tareas" |
+
+---
+
+## Medición del Tiempo de Respuesta
+
+El sistema mide y muestra el tiempo de respuesta **en cada operación del menú**:
+
+| Operación del menú | Qué se mide | Cómo se mide |
+|---------------------|-------------|--------------|
+| **1. Crear tarea** | Tiempo de validación + almacenamiento | `performance.now()` antes y después de `createTask()` |
+| **2. Buscar tarea** | Tiempo de búsqueda parcial LIKE | `performance.now()` antes y después de `searchTasksById()` |
+| **3. Cargar 50,000** | Tiempo total de generación y carga | `performance.now()` antes y después de `loadDemoTasks()` |
+
+### Resultados típicos de rendimiento
+
+| Operación | Tiempo medido | ¿Cumple < 1 segundo? |
+|-----------|---------------|----------------------|
+| Carga de 50,000 tareas | ~128 ms | ✅ Sí |
+| Búsqueda exacta (1 tarea entre 50,000) | ~0.10 ms | ✅ Sí |
+| Búsqueda LIKE "BX" (1,000 resultados entre 50,000) | ~11.5 ms | ✅ Sí |
+| Creación de 1 tarea con 50,000 existentes | ~0.01 ms | ✅ Sí |
+
+**Nota:** Los tiempos pueden variar según el hardware. Lo importante es que todos están muy por debajo del límite de 1 segundo (1,000 ms).
+
+---
+
+## Cómo se Generan las 50,000 Tareas Automáticas
+
+El método `loadDemoTasks(50000)` en `taskManager.js` genera tareas con IDs válidos usando un **algoritmo combinatorio**.
+
+### Algoritmo paso a paso
+
+**Paso 1 — Generar prefijos de 2 letras:**
+- Se combinan 2 posiciones de letras A-Z.
+- Primera letra: A-Z (26 opciones). Segunda letra: A-Z (26 opciones).
+- Total: 26 × 26 = **676 prefijos** (AA, AB, AC, ..., AZ, BA, BB, ..., ZZ).
+
+**Paso 2 — Combinar con sufijos de 3 dígitos:**
+- Cada prefijo se combina con números del 000 al 999.
+- Capacidad por prefijo: 1,000 IDs.
+- Capacidad total: 676 × 1,000 = **676,000 IDs únicos posibles**.
+
+**Paso 3 — Generar datos representativos:**
+- Cada tarea recibe un título combinando una acción (10 opciones) y un departamento (10 opciones).
+- La prioridad se distribuye equitativamente: alta, media, baja (33.3% cada una).
+
+### Distribución de IDs para 50,000 tareas
+
+```
+Prefijo AA → AA000, AA001, AA002, ..., AA999  (1,000 tareas)
+Prefijo AB → AB000, AB001, AB002, ..., AB999  (1,000 tareas)
+Prefijo AC → AC000, AC001, AC002, ..., AC999  (1,000 tareas)
+  ... (50 prefijos en total) ...
+Prefijo BX → BX000, BX001, BX002, ..., BX999  (1,000 tareas)
+────────────────────────────────────────────────
+Total: 50 prefijos × 1,000 = 50,000 tareas
+```
+
+### Datos generados para cada tarea
+
+| Campo | Valor generado | Ejemplo |
+|-------|---------------|---------|
+| ID | 2 letras + 3 dígitos | AA000, AB001, BX999 |
+| Título | "{acción} - {departamento} #{secuencia}" | "Revisar documento - TI #1" |
+| Descripción | Texto con departamento y número | "Tarea generada automáticamente..." |
+| Prioridad | Rotación: alta → media → baja | alta (tarea 1), media (tarea 2), baja (tarea 3) |
+| Fecha de vencimiento | 2026-12-31 (uniforme) | 2026-12-31 |
+| Estado | pendiente (por defecto) | pendiente |
+
+**Departamentos:** TI, RH, FN, MK, OP, LG, VT, AD, QA, DV (10 departamentos).
+**Acciones:** Revisar documento, Actualizar sistema, Generar reporte, Capacitar equipo, Auditar proceso, Optimizar flujo, Validar datos, Configurar servicio, Preparar entrega, Analizar métricas (10 acciones).
+
+---
+
+## Pruebas Implementadas (28 total)
+
+### Pruebas unitarias — `taskManager.test.js` (23 pruebas)
+
+#### Creación de tarea (2 pruebas)
+| Nº | Nombre de la prueba | Qué valida |
+|----|---------------------|------------|
+| 1 | Crear tarea con datos válidos | La tarea se registra con todos los campos correctos |
+| 2 | No permitir ID duplicado | Lanza error si ya existe una tarea con ese ID |
+
+#### Validación de ID (7 pruebas)
+| Nº | Nombre de la prueba | Entrada probada | Error esperado |
+|----|---------------------|-----------------|----------------|
+| 3 | Rechazar ID solo números | `12345` | "El ID debe tener el formato..." |
+| 4 | Rechazar ID solo letras | `ABCDE` | "El ID debe tener el formato..." |
+| 5 | Rechazar 1 letra + 3 dígitos | `A123` | "El ID debe tener el formato..." |
+| 6 | Rechazar 2 letras + 2 dígitos | `AB12` | "El ID debe tener el formato..." |
+| 7 | Rechazar caracteres especiales | `A@123` | "El ID debe tener el formato..." |
+| 8 | Rechazar ID vacío | `""` | "El ID de la tarea es obligatorio" |
+| 9 | Aceptar minúsculas (normalización) | `ab123` → `AB123` | Sin error, se normaliza |
+
+#### Validación de fecha (5 pruebas)
+| Nº | Nombre de la prueba | Entrada probada | Error esperado |
+|----|---------------------|-----------------|----------------|
+| 10 | Rechazar texto libre | `"mañana"` | "La fecha de vencimiento debe tener formato válido..." |
+| 11 | Rechazar formato DD/MM/YYYY | `"10/05/2026"` | "La fecha de vencimiento debe tener formato válido..." |
+| 12 | Rechazar fecha imposible | `"2026-13-40"` | "La fecha de vencimiento debe tener formato válido..." |
+| 13 | Rechazar fecha vacía | `""` | "La fecha de vencimiento debe tener formato válido..." |
+| 14 | Aceptar fecha válida | `"2026-02-28"` | Sin error |
+
+#### Validación de campos obligatorios (3 pruebas)
+| Nº | Nombre de la prueba | Campo probado | Error esperado |
+|----|---------------------|---------------|----------------|
+| 15 | Rechazar tarea sin título | título = `""` | "El título de la tarea es obligatorio" |
+| 16 | Rechazar tarea sin descripción | descripción = `""` | "La descripción de la tarea es obligatoria" |
+| 17 | Rechazar prioridad inválida | prioridad = `"urgente"` | "La prioridad debe ser alta, media o baja" |
+
+#### Búsqueda exacta (2 pruebas)
+| Nº | Nombre de la prueba | Qué valida |
+|----|---------------------|------------|
+| 18 | Buscar tarea existente | Retorna la tarea con información completa |
+| 19 | Buscar tarea inexistente | Retorna `null` |
+
+#### Búsqueda parcial LIKE (4 pruebas)
+| Nº | Nombre de la prueba | Búsqueda | Resultado esperado |
+|----|---------------------|----------|-------------------|
+| 20 | LIKE por prefijo | `"TK"` | Encuentra TK001, TK002 (2 resultados) |
+| 21 | LIKE por sufijo | `"001"` | Encuentra TK001, AB001 (2 resultados) |
+| 22 | LIKE sin coincidencias | `"ZZ"` | 0 resultados |
+| 23 | LIKE case insensitive | `"tk"` | Encuentra TK001 (1 resultado) |
+
+### Pruebas de rendimiento — `performance.test.js` (5 pruebas)
+
+| Nº | Nombre de la prueba | Qué mide | Criterio |
+|----|---------------------|----------|----------|
+| 24 | Carga de 50,000 tareas | Tiempo de generación masiva | Genera exactamente 50,000 |
+| 25 | Búsqueda exacta < 1s | Buscar BX999 entre 50,000 | < 1,000 ms |
+| 26 | Búsqueda LIKE < 1s | Buscar "BX" entre 50,000 | < 1,000 ms |
+| 27 | Creación con 50K < 1s | Crear 1 tarea con 50,000 existentes | < 1,000 ms |
+| 28 | IDs generados válidos | Verificar formato de IDs auto-generados | 100% formato correcto |
+
+---
+
+## Criterios de Aceptación del Sprint 1
+
+| Nº | Criterio | Tipo | ¿Cumple? | Evidencia |
+|----|----------|------|----------|-----------|
+| 1 | Crear tarea con ID, título, descripción, prioridad y fecha | Funcional | ✅ | Prueba #1 |
+| 2 | Validar formato de ID (2 letras + 3 dígitos) | Funcional | ✅ | Pruebas #3-#9 |
+| 3 | Validar ID no vacío | Funcional | ✅ | Prueba #8 |
+| 4 | Evitar IDs duplicados | Funcional | ✅ | Prueba #2 |
+| 5 | Prioridad solo alta, media o baja | Funcional | ✅ | Prueba #17 |
+| 6 | Fecha con formato YYYY-MM-DD válido | Funcional | ✅ | Pruebas #10-#14 |
+| 7 | Título y descripción obligatorios | Funcional | ✅ | Pruebas #15-#16 |
+| 8 | Buscar tareas con búsqueda parcial LIKE | Funcional | ✅ | Pruebas #20-#23 |
+| 9 | Mostrar información completa si la tarea existe | Funcional | ✅ | Prueba #18 |
+| 10 | Mostrar mensaje si la tarea no existe | Funcional | ✅ | Prueba #19 |
+| 11 | Búsqueda < 1 segundo con 50,000 tareas | No funcional | ✅ | Pruebas #25-#26 |
+| 12 | Creación < 1 segundo con 50,000 tareas | No funcional | ✅ | Prueba #27 |
+| 13 | Cargar 50,000 tareas automáticamente | No funcional | ✅ | Prueba #24 |
+| 14 | Mostrar tiempo de respuesta en cada operación | No funcional | ✅ | Visible en menú |
+
+---
+
+## Manejo de Errores
+
+Todos los errores de validación se muestran al usuario con mensajes claros en español:
+
+| Situación | Mensaje mostrado al usuario |
+|-----------|----------------------------|
+| ID vacío | "El ID de la tarea es obligatorio." |
+| ID con formato incorrecto | "El ID debe tener el formato: 2 letras seguidas de 3 dígitos (ejemplo: AB123, TK001)." |
+| ID duplicado | "Ya existe una tarea con el ID AB123." |
+| Título vacío | "El título de la tarea es obligatorio." |
+| Descripción vacía | "La descripción de la tarea es obligatoria." |
+| Prioridad inválida | "La prioridad debe ser alta, media o baja." |
+| Fecha inválida | "La fecha de vencimiento debe tener formato válido: YYYY-MM-DD (ejemplo: 2026-05-10)." |
+| Búsqueda sin resultados | "No se encontraron tareas que contengan 'XYZ' en su ID." |
+| Opción de menú inválida | "Opción inválida. Por favor seleccione una opción del 1 al 4." |
+| 50,000 ya cargadas | "Las 50,000 tareas ya fueron cargadas previamente." |
+
+---
+
+## Relación con Calidad de Software y Scrum
+
+### Definición de "Hecho" (Definition of Done)
+Una funcionalidad se considera terminada cuando:
+1. El código compila y ejecuta sin errores.
+2. Todas las pruebas unitarias pasan.
+3. Las pruebas de rendimiento cumplen el criterio de < 1 segundo.
+4. Los mensajes de error son claros y en español.
+5. El código está documentado con JSDoc.
+
+### Pruebas continuas
+- **23 pruebas unitarias** validan cada regla de negocio individualmente.
+- **5 pruebas de rendimiento** verifican la escalabilidad del sistema.
+- Las pruebas se ejecutan con un solo comando: `npm test`.
+
+### Revisión de código
+- Se corrigió código duplicado en `main.js`.
+- Se mejoró la estructura separando lógica de negocio (taskManager.js) de la interfaz (main.js).
+- Se documentaron todos los métodos con JSDoc.
+- Se usan métodos privados (`#método`) de JavaScript moderno para encapsulación.

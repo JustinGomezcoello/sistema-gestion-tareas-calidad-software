@@ -233,6 +233,12 @@ export class TaskManager {
         const suffix = String(num).padStart(3, '0');
         const id = `${prefix}${suffix}`;
 
+        // Saltar IDs que ya existan (por si el usuario creó tareas manualmente antes)
+        if (this.tasks.has(id)) {
+          count++;
+          continue;
+        }
+
         // Rotar prioridad, departamento y acción para variedad en los datos
         const priority = priorities[count % 3];
         const dept = departments[count % departments.length];

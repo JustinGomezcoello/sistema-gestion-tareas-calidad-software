@@ -61,7 +61,6 @@ function printTask(task) {
   console.log(`  Descripción:   ${task.description}`);
   console.log(`  Prioridad:     ${task.priority}`);
   console.log(`  Fecha venc.:   ${task.dueDate}`);
-  console.log(`  Estado:        ${task.status}`);
   printSeparator();
 }
 
