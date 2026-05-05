@@ -336,4 +336,62 @@ export class TaskManager {
     const taskDate = new Date(`${dateString}T00:00:00`);
     return taskDate >= today;
   }
+  // ─────────────────────────────────────────────────────────────────────────
+  // MÉTODOS DEL SPRINT 2
+  // ─────────────────────────────────────────────────────────────────────────
+
+  /**
+   * Actualiza el estado de una tarea existente.
+   */
+  actualizarEstadoTarea(id, nuevoEstado) {
+    const task = this.findTaskById(id);
+    if (!task) {
+      throw new Error(`No se encontró ninguna tarea con el ID: ${id}`);
+    }
+
+    const estadoNormalizado = String(nuevoEstado).toLowerCase();
+    if (!['pendiente', 'en progreso', 'completada'].includes(estadoNormalizado)) {
+      throw new Error('El estado debe ser: pendiente, en progreso o completada.');
+    }
+
+    task.status = estadoNormalizado;
+    return task;
+  }
+
+  /**
+   * Retorna todas las tareas agrupadas por prioridad.
+   */
+  listarTareasPorPrioridad() {
+    const agrupadas = { alta: [], media: [], baja: [] };
+    for (const task of this.tasks.values()) {
+      // Como aseguramos en createTask que solo pueden ser estas 3, esto es seguro
+      agrupadas[task.priority].push(task); 
+    }
+    return agrupadas;
+  }
+
+  /**
+   * Retorna las tareas que vencen en los próximos N días y no están completadas.
+   */
+  listarTareasProximasAVencer(diasLimite = 7) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const futureLimit = new Date(today);
+    futureLimit.setDate(futureLimit.getDate() + diasLimite);
+
+    const proximas = [];
+    
+    for (const task of this.tasks.values()) {
+      if (task.status === 'completada') continue; // Ignorar las ya terminadas
+      
+      const taskDate = new Date(`${task.dueDate}T00:00:00`);
+      if (taskDate >= today && taskDate <= futureLimit) {
+        proximas.push(task);
+      }
+    }
+
+    // Ordenar de la más próxima a vencer a la más lejana
+    return proximas.sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
+  }
 }
