@@ -1,0 +1,20 @@
+{
+  "name": "sistema-tareas-sprint1",
+  "version": "1.0.0",
+  "description": "Sprint 1 - Sistema de Gestión de Tareas Empresarial",
+  "type": "module",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "node src/main.js",
+    "test": "node --test tests/*.test.js",
+    "performance": "node tests/performance.test.js"
+  },
+  "keywords": [
+    "scrum",
+    "calidad",
+    "pruebas-unitarias",
+    "sprint-1"
+  ],
+  "author": "Equipo Sprint 1",
+  "license": "MIT"
+}
