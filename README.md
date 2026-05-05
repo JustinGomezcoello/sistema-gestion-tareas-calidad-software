@@ -2,9 +2,9 @@
 
 ## Integrantes
 - Justin Gomezcoello
-- David Ruedo
+- David Rueda
 - Stefan Jativa
-- Jheol Suarez
+- Jhoel Suarez
 - Mauricio Mora
 
 ## Funcionalidades del Sprint 1
