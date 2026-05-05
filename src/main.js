@@ -290,40 +290,40 @@ function listUpcoming() {
  *  - Error en creación → muestra el mensaje de validación específico.
  *  - Búsqueda sin resultados → muestra mensaje informativo.
  */
+// Reemplazar la función menu() con esto:
 async function menu() {
   let option = '';
 
-  while (option !== '4') {
+  while (option !== '7') { // <-- Cambiar a 7 (o la opción de salida final)
     console.log('╔══════════════════════════════════════════════════════════╗');
-    console.log('║   Sistema de Gestión de Tareas Empresarial - Sprint 1   ║');
+    console.log('║   Sistema de Gestión de Tareas Empresarial - Sprint 2    ║');
     console.log('╠══════════════════════════════════════════════════════════╣');
-    console.log('║  1. Crear tarea                                        ║');
-    console.log('║  2. Buscar tarea por ID                                ║');
-    console.log('║  3. Cargar 50,000 tareas automáticamente               ║');
-    console.log('║  4. Salir                                              ║');
+    console.log('║  1. Crear tarea                                          ║');
+    console.log('║  2. Buscar tarea por ID                                  ║');
+    console.log('║  3. Cargar 50,000 tareas automáticamente                 ║');
+    console.log('║  4. Actualizar estado de una tarea                       ║'); // NUEVO
+    console.log('║  5. Listar tareas agrupadas por prioridad                ║'); // NUEVO
+    console.log('║  6. Listar tareas próximas a vencer                      ║'); // NUEVO
+    console.log('║  7. Salir                                                ║');
     console.log('╚══════════════════════════════════════════════════════════╝');
 
     option = await rl.question('\nSeleccione una opción: ');
 
     switch (option.trim()) {
-      case '1':
-        await createTaskFromTerminal();
-        break;
-      case '2':
-        await findTaskFromTerminal();
-        break;
-      case '3':
-        loadAutomaticTasks();
-        break;
-      case '4':
+      case '1': await createTaskFromTerminal(); break;
+      case '2': await findTaskFromTerminal(); break;
+      case '3': loadAutomaticTasks(); break;
+      case '4': await updateTaskStatusFromTerminal(); break; // NUEVO
+      case '5': listByPriority(); break;                     // NUEVO
+      case '6': listUpcoming(); break;                       // NUEVO
+      case '7': 
         console.log('\n✅ Programa finalizado. ¡Hasta pronto!\n');
         break;
       default:
-        console.log('\n❌ Opción inválida. Por favor seleccione una opción del 1 al 4.\n');
+        console.log('\n❌ Opción inválida. Por favor seleccione una opción del 1 al 7.\n');
         break;
     }
   }
-
   rl.close();
 }
 
