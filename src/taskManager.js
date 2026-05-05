@@ -82,26 +82,33 @@ export class TaskManager {
       throw new Error(`Ya existe una tarea con el ID ${taskId.toUpperCase()}.`);
     }
 
-    // Validación 4: Título obligatorio
+    // Validación 4: Título obligatorio y tamaño máximo
     if (!title || String(title).trim() === '') {
       throw new Error('El título de la tarea es obligatorio.');
     }
+    if (String(title).trim().length > 100) {
+      throw new Error('El tamaño del título no puede exceder los 100 caracteres.');
+    }
 
-    // Validación 5: Descripción obligatoria
+    // Validación 5: Descripción obligatoria y tamaño máximo
     if (!description || String(description).trim() === '') {
       throw new Error('La descripción de la tarea es obligatoria.');
     }
-
-    // Validación 6: Prioridad válida
-    if (!['alta', 'media', 'baja'].includes(String(priority).toLowerCase())) {
-      throw new Error('La prioridad debe ser alta, media o baja.');
+    if (String(description).trim().length > 250) {
+      throw new Error('El tamaño de la descripción no puede exceder los 250 caracteres.');
     }
 
-    // Validación 7: Fecha de vencimiento válida
+    // Validación 6: Prioridad válida estricta en MAYÚSCULAS
+    if (!['ALTA', 'MEDIA', 'BAJA'].includes(String(priority))) {
+      throw new Error('Error: La prioridad debe ser ingresada en mayúsculas (ALTA, MEDIA o BAJA).');
+    }
+
+    // Validación 7: Fecha de vencimiento válida y FUTURA
     if (!this.#isValidDate(dueDate)) {
-      throw new Error(
-        'La fecha de vencimiento debe tener formato válido: YYYY-MM-DD (ejemplo: 2026-05-10).'
-      );
+      throw new Error('La fecha de vencimiento debe tener formato válido: YYYY-MM-DD.');
+    }
+    if (!this.#isFutureDate(dueDate)) {
+      throw new Error('La fecha de vencimiento solo puede ser una fecha futura.');
     }
 
     // Validación 8: Estado válido
@@ -114,7 +121,7 @@ export class TaskManager {
       id: taskId.toUpperCase(),
       title: String(title).trim(),
       description: String(description).trim(),
-      priority: String(priority).toLowerCase(),
+      priority: String(priority),
       dueDate: String(dueDate),
       status: String(status).toLowerCase()
     };
@@ -212,7 +219,7 @@ export class TaskManager {
    * @param {number} [quantity=50000] - Cantidad de tareas a generar.
    */
   loadDemoTasks(quantity = 50000) {
-    const priorities = ['alta', 'media', 'baja'];
+    const priorities = ['ALTA', 'MEDIA', 'BAJA'];
     const departments = ['TI', 'RH', 'FN', 'MK', 'OP', 'LG', 'VT', 'AD', 'QA', 'DV'];
     const actions = [
       'Revisar documento', 'Actualizar sistema', 'Generar reporte',
@@ -318,5 +325,73 @@ export class TaskManager {
     // Paso 2: Verificar que sea una fecha real del calendario
     const date = new Date(`${value}T00:00:00`);
     return !Number.isNaN(date.getTime());
+  }
+  /**
+   * Valida que la fecha ingresada sea mayor o igual al día de hoy.
+   * @private
+   */
+  #isFutureDate(dateString) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Ignorar la hora actual para comparar solo días
+    const taskDate = new Date(`${dateString}T00:00:00`);
+    return taskDate >= today;
+  }
+  // ─────────────────────────────────────────────────────────────────────────
+  // MÉTODOS DEL SPRINT 2
+  // ─────────────────────────────────────────────────────────────────────────
+
+  /**
+   * Actualiza el estado de una tarea existente.
+   */
+  actualizarEstadoTarea(id, nuevoEstado) {
+    const task = this.findTaskById(id);
+    if (!task) {
+      throw new Error(`No se encontró ninguna tarea con el ID: ${id}`);
+    }
+
+    const estadoNormalizado = String(nuevoEstado).toLowerCase();
+    if (!['pendiente', 'en progreso', 'completada'].includes(estadoNormalizado)) {
+      throw new Error('El estado debe ser: pendiente, en progreso o completada.');
+    }
+
+    task.status = estadoNormalizado;
+    return task;
+  }
+
+  /**
+   * Retorna todas las tareas agrupadas por prioridad.
+   */
+  listarTareasPorPrioridad() {
+    const agrupadas = { ALTA: [], MEDIA: [], BAJA: [] };
+    for (const task of this.tasks.values()) {
+      // Como aseguramos en createTask que solo pueden ser estas 3, esto es seguro
+      agrupadas[task.priority].push(task); 
+    }
+    return agrupadas;
+  }
+
+  /**
+   * Retorna las tareas que vencen en los próximos N días y no están completadas.
+   */
+  listarTareasProximasAVencer(diasLimite = 7) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const futureLimit = new Date(today);
+    futureLimit.setDate(futureLimit.getDate() + diasLimite);
+
+    const proximas = [];
+    
+    for (const task of this.tasks.values()) {
+      if (task.status === 'completada') continue; // Ignorar las ya terminadas
+      
+      const taskDate = new Date(`${task.dueDate}T00:00:00`);
+      if (taskDate >= today && taskDate <= futureLimit) {
+        proximas.push(task);
+      }
+    }
+
+    // Ordenar de la más próxima a vencer a la más lejana
+    return proximas.sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
   }
 }

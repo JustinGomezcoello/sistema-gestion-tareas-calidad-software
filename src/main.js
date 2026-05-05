@@ -95,7 +95,7 @@ async function createTaskFromTerminal() {
   const id = await rl.question('ID: ');
   const title = await rl.question('Título: ');
   const description = await rl.question('Descripción: ');
-  const priority = await rl.question('Prioridad (alta/media/baja): ');
+  const priority = await rl.question('Prioridad (ALTA/MEDIA/BAJA): ');
   const dueDate = await rl.question('Fecha de vencimiento (YYYY-MM-DD): ');
 
   // Medir tiempo de respuesta de la operación de creación
@@ -206,10 +206,72 @@ function loadAutomaticTasks() {
   printSeparator();
   console.log(`  Cantidad generada:  ${manager.countTasks()} tareas`);
   console.log(`  Formato de IDs:     2 letras + 3 dígitos (AA000 hasta BX999)`);
-  console.log(`  Prioridades:        alta, media, baja (distribuidas equitativamente)`);
+  console.log(`  Prioridades:        ALTA, MEDIA, BAJA (distribuidas equitativamente)`);
   console.log(`  Fecha de venc.:     2026-12-31 (fecha uniforme para pruebas)`);
   console.log(`  Estado inicial:     pendiente`);
   printSeparator();
+  printResponseTime(elapsed);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Funciones Sprint 2
+// ─────────────────────────────────────────────────────────────────────────────
+
+async function updateTaskStatusFromTerminal() {
+  console.log('\n── Actualizar Estado de Tarea ──');
+  const id = await rl.question('Ingrese el ID de la tarea: ');
+  const nuevoEstado = await rl.question('Nuevo estado (pendiente/en progreso/completada): ');
+
+  const start = performance.now();
+  try {
+    const task = manager.actualizarEstadoTarea(id, nuevoEstado);
+    const elapsed = performance.now() - start;
+    console.log(`\n✅ Estado actualizado correctamente a "${task.status}".`);
+    printResponseTime(elapsed);
+  } catch (error) {
+    const elapsed = performance.now() - start;
+    console.log(`\n❌ Error: ${error.message}\n`);
+    printResponseTime(elapsed);
+  }
+}
+
+function listByPriority() {
+  console.log('\n── Tareas Agrupadas por Prioridad ──');
+  const start = performance.now();
+  const agrupadas = manager.listarTareasPorPrioridad();
+  const elapsed = performance.now() - start;
+
+  ['ALTA', 'MEDIA', 'BAJA'].forEach(prioridad => {
+    console.log(`\n🔴 Prioridad ${prioridad.toUpperCase()} (${agrupadas[prioridad].length} tareas):`);
+    // Mostrar solo las primeras 5 de cada grupo para no saturar consola si hay 50k
+    const maxShow = Math.min(agrupadas[prioridad].length, 5);
+    for (let i = 0; i < maxShow; i++) {
+      const t = agrupadas[prioridad][i];
+      console.log(`  - [${t.id}] ${t.title} (Vence: ${t.dueDate}) | Estado: ${t.status}`);
+    }
+    if (agrupadas[prioridad].length > 5) console.log(`  ... y ${agrupadas[prioridad].length - 5} más.`);
+  });
+  console.log();
+  printResponseTime(elapsed);
+}
+
+function listUpcoming() {
+  console.log('\n── Tareas Próximas a Vencer (próximos 7 días) ──');
+  const start = performance.now();
+  const proximas = manager.listarTareasProximasAVencer(7);
+  const elapsed = performance.now() - start;
+
+  if (proximas.length === 0) {
+    console.log('🎉 ¡Genial! No hay tareas próximas a vencer.');
+  } else {
+    const maxShow = Math.min(proximas.length, 15);
+    for (let i = 0; i < maxShow; i++) {
+      const t = proximas[i];
+      console.log(`  - [${t.id}] ${t.title} | Prioridad: ${t.priority} | Vence: ${t.dueDate} | Estado: ${t.status}`);
+    }
+    if (proximas.length > 15) console.log(`  ... y ${proximas.length - 15} más.`);
+  }
+  console.log();
   printResponseTime(elapsed);
 }
 
@@ -228,40 +290,40 @@ function loadAutomaticTasks() {
  *  - Error en creación → muestra el mensaje de validación específico.
  *  - Búsqueda sin resultados → muestra mensaje informativo.
  */
+// Reemplazar la función menu() con esto:
 async function menu() {
   let option = '';
 
-  while (option !== '4') {
+  while (option !== '7') { // <-- Cambiar a 7 (o la opción de salida final)
     console.log('╔══════════════════════════════════════════════════════════╗');
-    console.log('║   Sistema de Gestión de Tareas Empresarial - Sprint 1   ║');
+    console.log('║   Sistema de Gestión de Tareas Empresarial - Sprint 2    ║');
     console.log('╠══════════════════════════════════════════════════════════╣');
-    console.log('║  1. Crear tarea                                        ║');
-    console.log('║  2. Buscar tarea por ID                                ║');
-    console.log('║  3. Cargar 50,000 tareas automáticamente               ║');
-    console.log('║  4. Salir                                              ║');
+    console.log('║  1. Crear tarea                                          ║');
+    console.log('║  2. Buscar tarea por ID                                  ║');
+    console.log('║  3. Cargar 50,000 tareas automáticamente                 ║');
+    console.log('║  4. Actualizar estado de una tarea                       ║'); // NUEVO
+    console.log('║  5. Listar tareas agrupadas por prioridad                ║'); // NUEVO
+    console.log('║  6. Listar tareas próximas a vencer                      ║'); // NUEVO
+    console.log('║  7. Salir                                                ║');
     console.log('╚══════════════════════════════════════════════════════════╝');
 
     option = await rl.question('\nSeleccione una opción: ');
 
     switch (option.trim()) {
-      case '1':
-        await createTaskFromTerminal();
-        break;
-      case '2':
-        await findTaskFromTerminal();
-        break;
-      case '3':
-        loadAutomaticTasks();
-        break;
-      case '4':
+      case '1': await createTaskFromTerminal(); break;
+      case '2': await findTaskFromTerminal(); break;
+      case '3': loadAutomaticTasks(); break;
+      case '4': await updateTaskStatusFromTerminal(); break; // NUEVO
+      case '5': listByPriority(); break;                     // NUEVO
+      case '6': listUpcoming(); break;                       // NUEVO
+      case '7': 
         console.log('\n✅ Programa finalizado. ¡Hasta pronto!\n');
         break;
       default:
-        console.log('\n❌ Opción inválida. Por favor seleccione una opción del 1 al 4.\n');
+        console.log('\n❌ Opción inválida. Por favor seleccione una opción del 1 al 7.\n');
         break;
     }
   }
-
   rl.close();
 }
 
