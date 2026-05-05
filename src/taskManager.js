@@ -82,26 +82,33 @@ export class TaskManager {
       throw new Error(`Ya existe una tarea con el ID ${taskId.toUpperCase()}.`);
     }
 
-    // Validación 4: Título obligatorio
+    // Validación 4: Título obligatorio y tamaño máximo
     if (!title || String(title).trim() === '') {
       throw new Error('El título de la tarea es obligatorio.');
     }
+    if (String(title).trim().length > 100) {
+      throw new Error('El tamaño del título no puede exceder los 100 caracteres.');
+    }
 
-    // Validación 5: Descripción obligatoria
+    // Validación 5: Descripción obligatoria y tamaño máximo
     if (!description || String(description).trim() === '') {
       throw new Error('La descripción de la tarea es obligatoria.');
     }
-
-    // Validación 6: Prioridad válida
-    if (!['alta', 'media', 'baja'].includes(String(priority).toLowerCase())) {
-      throw new Error('La prioridad debe ser alta, media o baja.');
+    if (String(description).trim().length > 250) {
+      throw new Error('El tamaño de la descripción no puede exceder los 250 caracteres.');
     }
 
-    // Validación 7: Fecha de vencimiento válida
+    // Validación 6: Prioridad válida (Actualizado según PO)
+    if (!['alta', 'media', 'baja'].includes(String(priority).toLowerCase())) {
+      throw new Error('Error: La prioridad debe ser ALTA, MEDIA o BAJA.');
+    }
+
+    // Validación 7: Fecha de vencimiento válida y FUTURA
     if (!this.#isValidDate(dueDate)) {
-      throw new Error(
-        'La fecha de vencimiento debe tener formato válido: YYYY-MM-DD (ejemplo: 2026-05-10).'
-      );
+      throw new Error('La fecha de vencimiento debe tener formato válido: YYYY-MM-DD.');
+    }
+    if (!this.#isFutureDate(dueDate)) {
+      throw new Error('La fecha de vencimiento solo puede ser una fecha futura.');
     }
 
     // Validación 8: Estado válido
@@ -318,5 +325,15 @@ export class TaskManager {
     // Paso 2: Verificar que sea una fecha real del calendario
     const date = new Date(`${value}T00:00:00`);
     return !Number.isNaN(date.getTime());
+  }
+  /**
+   * Valida que la fecha ingresada sea mayor o igual al día de hoy.
+   * @private
+   */
+  #isFutureDate(dateString) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Ignorar la hora actual para comparar solo días
+    const taskDate = new Date(`${dateString}T00:00:00`);
+    return taskDate >= today;
   }
 }
