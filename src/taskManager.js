@@ -98,9 +98,9 @@ export class TaskManager {
       throw new Error('El tamaño de la descripción no puede exceder los 250 caracteres.');
     }
 
-    // Validación 6: Prioridad válida (Actualizado según PO)
-    if (!['alta', 'media', 'baja'].includes(String(priority).toLowerCase())) {
-      throw new Error('Error: La prioridad debe ser ALTA, MEDIA o BAJA.');
+    // Validación 6: Prioridad válida estricta en MAYÚSCULAS
+    if (!['ALTA', 'MEDIA', 'BAJA'].includes(String(priority))) {
+      throw new Error('Error: La prioridad debe ser ingresada en mayúsculas (ALTA, MEDIA o BAJA).');
     }
 
     // Validación 7: Fecha de vencimiento válida y FUTURA
@@ -121,7 +121,7 @@ export class TaskManager {
       id: taskId.toUpperCase(),
       title: String(title).trim(),
       description: String(description).trim(),
-      priority: String(priority).toLowerCase(),
+      priority: String(priority),
       dueDate: String(dueDate),
       status: String(status).toLowerCase()
     };
@@ -219,7 +219,7 @@ export class TaskManager {
    * @param {number} [quantity=50000] - Cantidad de tareas a generar.
    */
   loadDemoTasks(quantity = 50000) {
-    const priorities = ['alta', 'media', 'baja'];
+    const priorities = ['ALTA', 'MEDIA', 'BAJA'];
     const departments = ['TI', 'RH', 'FN', 'MK', 'OP', 'LG', 'VT', 'AD', 'QA', 'DV'];
     const actions = [
       'Revisar documento', 'Actualizar sistema', 'Generar reporte',
@@ -362,7 +362,7 @@ export class TaskManager {
    * Retorna todas las tareas agrupadas por prioridad.
    */
   listarTareasPorPrioridad() {
-    const agrupadas = { alta: [], media: [], baja: [] };
+    const agrupadas = { ALTA: [], MEDIA: [], BAJA: [] };
     for (const task of this.tasks.values()) {
       // Como aseguramos en createTask que solo pueden ser estas 3, esto es seguro
       agrupadas[task.priority].push(task); 

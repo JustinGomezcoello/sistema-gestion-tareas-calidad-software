@@ -95,7 +95,7 @@ async function createTaskFromTerminal() {
   const id = await rl.question('ID: ');
   const title = await rl.question('Título: ');
   const description = await rl.question('Descripción: ');
-  const priority = await rl.question('Prioridad (alta/media/baja): ');
+  const priority = await rl.question('Prioridad (ALTA/MEDIA/BAJA): ');
   const dueDate = await rl.question('Fecha de vencimiento (YYYY-MM-DD): ');
 
   // Medir tiempo de respuesta de la operación de creación
@@ -206,7 +206,7 @@ function loadAutomaticTasks() {
   printSeparator();
   console.log(`  Cantidad generada:  ${manager.countTasks()} tareas`);
   console.log(`  Formato de IDs:     2 letras + 3 dígitos (AA000 hasta BX999)`);
-  console.log(`  Prioridades:        alta, media, baja (distribuidas equitativamente)`);
+  console.log(`  Prioridades:        ALTA, MEDIA, BAJA (distribuidas equitativamente)`);
   console.log(`  Fecha de venc.:     2026-12-31 (fecha uniforme para pruebas)`);
   console.log(`  Estado inicial:     pendiente`);
   printSeparator();
@@ -241,7 +241,7 @@ function listByPriority() {
   const agrupadas = manager.listarTareasPorPrioridad();
   const elapsed = performance.now() - start;
 
-  ['alta', 'media', 'baja'].forEach(prioridad => {
+  ['ALTA', 'MEDIA', 'BAJA'].forEach(prioridad => {
     console.log(`\n🔴 Prioridad ${prioridad.toUpperCase()} (${agrupadas[prioridad].length} tareas):`);
     // Mostrar solo las primeras 5 de cada grupo para no saturar consola si hay 50k
     const maxShow = Math.min(agrupadas[prioridad].length, 5);

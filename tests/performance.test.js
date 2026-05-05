@@ -66,7 +66,7 @@ test('la creación de una tarea individual debe responder en menos de 1 segundo 
     id: 'ZZ999',
     title: 'Tarea de prueba de rendimiento',
     description: 'Verificar que la creación es rápida con 50,000 tareas',
-    priority: 'alta',
+    priority: 'ALTA',
     dueDate: '2026-12-31'
   });
   const elapsed = performance.now() - start;
