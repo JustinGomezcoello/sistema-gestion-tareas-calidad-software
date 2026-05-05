@@ -214,6 +214,68 @@ function loadAutomaticTasks() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Funciones Sprint 2
+// ─────────────────────────────────────────────────────────────────────────────
+
+async function updateTaskStatusFromTerminal() {
+  console.log('\n── Actualizar Estado de Tarea ──');
+  const id = await rl.question('Ingrese el ID de la tarea: ');
+  const nuevoEstado = await rl.question('Nuevo estado (pendiente/en progreso/completada): ');
+
+  const start = performance.now();
+  try {
+    const task = manager.actualizarEstadoTarea(id, nuevoEstado);
+    const elapsed = performance.now() - start;
+    console.log(`\n✅ Estado actualizado correctamente a "${task.status}".`);
+    printResponseTime(elapsed);
+  } catch (error) {
+    const elapsed = performance.now() - start;
+    console.log(`\n❌ Error: ${error.message}\n`);
+    printResponseTime(elapsed);
+  }
+}
+
+function listByPriority() {
+  console.log('\n── Tareas Agrupadas por Prioridad ──');
+  const start = performance.now();
+  const agrupadas = manager.listarTareasPorPrioridad();
+  const elapsed = performance.now() - start;
+
+  ['alta', 'media', 'baja'].forEach(prioridad => {
+    console.log(`\n🔴 Prioridad ${prioridad.toUpperCase()} (${agrupadas[prioridad].length} tareas):`);
+    // Mostrar solo las primeras 5 de cada grupo para no saturar consola si hay 50k
+    const maxShow = Math.min(agrupadas[prioridad].length, 5);
+    for (let i = 0; i < maxShow; i++) {
+      const t = agrupadas[prioridad][i];
+      console.log(`  - [${t.id}] ${t.title} (Vence: ${t.dueDate}) | Estado: ${t.status}`);
+    }
+    if (agrupadas[prioridad].length > 5) console.log(`  ... y ${agrupadas[prioridad].length - 5} más.`);
+  });
+  console.log();
+  printResponseTime(elapsed);
+}
+
+function listUpcoming() {
+  console.log('\n── Tareas Próximas a Vencer (próximos 7 días) ──');
+  const start = performance.now();
+  const proximas = manager.listarTareasProximasAVencer(7);
+  const elapsed = performance.now() - start;
+
+  if (proximas.length === 0) {
+    console.log('🎉 ¡Genial! No hay tareas próximas a vencer.');
+  } else {
+    const maxShow = Math.min(proximas.length, 15);
+    for (let i = 0; i < maxShow; i++) {
+      const t = proximas[i];
+      console.log(`  - [${t.id}] ${t.title} | Prioridad: ${t.priority} | Vence: ${t.dueDate} | Estado: ${t.status}`);
+    }
+    if (proximas.length > 15) console.log(`  ... y ${proximas.length - 15} más.`);
+  }
+  console.log();
+  printResponseTime(elapsed);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Menú principal
 // ─────────────────────────────────────────────────────────────────────────────
 
